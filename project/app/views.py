@@ -51,21 +51,21 @@ def search_func(request):
             print('sessopnn',request.session['user'])
             user = users.objects.get(username=request.session.get('user'))
             # print(user)
-            # data = SearchHistory.objects.create(query=inp,user=user)
-            # data.save()
-            # user_search = SearchHistory.objects.filter(user=user)
-            # user_search = [s.query for s in user_search]
-            # user_products = ViewHistory.objects.filter(user=user)
-            # user_products = [s.product.name for s in user_products]
-            # user_data = [{
-            #     'user_id': user.id,
-            #     'product': ','.join(user_products),
-            #     'search': ','.join(user_search)
-            # }]
-            # df = pd.DataFrame(user_data)
-            # user_vectors = vectorize_user_with_search(df)
-            # user.vector_data = json.dumps(user_vectors[0].tolist())
-            # user.save()
+            data = SearchHistory.objects.create(query=inp,user=user)
+            data.save()
+            user_search = SearchHistory.objects.filter(user=user)
+            user_search = [s.query for s in user_search]
+            user_products = ViewHistory.objects.filter(user=user)
+            user_products = [s.product.name for s in user_products]
+            user_data = [{
+                'user_id': user.id,
+                'product': ','.join(user_products),
+                'search': ','.join(user_search)
+            }]
+            df = pd.DataFrame(user_data)
+            user_vectors = vectorize_user_with_search(df)
+            user.vector_data = json.dumps(user_vectors[0].tolist())
+            user.save()
             # print(user_search)
         inp=request.POST['search']
         # pro_name=[]
@@ -212,6 +212,20 @@ def addReview(request,pk):
             prod.rating = total_rating
         else:
             prod.rating = rating
+        prod.save()
+        comments = [i.description for i in rev]
+        pro_data = [{
+                "pro_id": prod.id,
+                "name": prod.name,
+                "rating": prod.rating,
+                "type":prod.type,
+                "description": prod.description,
+                "reviews": ','.join(comments)
+            }]
+        df = pd.DataFrame(pro_data)
+        product_vector = vectorize_product_with_reviews(df)
+        print('pro',product_vector)
+        prod.vector_data = json.dumps(product_vector[0].tolist())
         prod.save()
         return redirect(reverse('products', args=[pk]))
     else:
