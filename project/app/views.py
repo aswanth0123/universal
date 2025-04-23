@@ -46,7 +46,7 @@ def types(request):
 
 def search_func(request):
     if request.method=='POST':
-        # inp=request.POST['search']
+        inp=request.POST['search']
         if 'user' in request.session:
             print('sessopnn',request.session['user'])
             user = users.objects.get(username=request.session.get('user'))
@@ -111,14 +111,16 @@ def index(request):
     product_vectors = [json.loads(pro.vector_data) for pro in data]
     product_vectors = np.array(product_vectors)  # Combine list of NumPy arrays to one array
     product_vectors = torch.tensor(product_vectors)
-    if getuser(request):
-        user = users.objects.get(username=request.session.get('user'))
+    if 'user' in request.session:
+        print(request.session['user'])
+        user = users.objects.get(username=request.session['user'])
         user_vector = json.loads(user.vector_data)
-        recommend_products = recommend_product(user_vector, product_vectors, product_ids,top_n=8) 
+        recommend_products = recommend_product(user_vector, product_vectors, product_ids,top_n=12) 
+        print(recommend_products)
         products = [i[0] for i  in recommend_products]
         preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(products)])
         products = product.objects.filter(pk__in=products).order_by(preserved_order)
-        # print(products)
+        print(products)
         price2 = filter(products,price)
 
     
@@ -143,7 +145,7 @@ def products(request,pk,pk1=None):
     if getuser(request):
         product1=product.objects.get(pk=pk)
         weights=weight.objects.filter(p_name=product1)
-        user_name=users.objects.get(username=request.session.get("user"))
+        user_name=users.objects.get(username=request.session["user"])
         if getuser(request):     
             history = ViewHistory.objects.create(user=user_name, product=product1)
             history.save()

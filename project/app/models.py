@@ -15,7 +15,7 @@ class product(models.Model):
     rating=models.FloatField(default=0)
     vector_data=models.TextField(null=True)
     def __str__(self):
-        return self.name+str(self.id)
+        return str(self.id)
 
 class weight(models.Model):
     p_name=models.ForeignKey(product,on_delete=models.CASCADE)
